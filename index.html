@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Souqmarine</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+
+  <h1>Souqmarine</h1>
+  <p>Maritime market · Powered by Pi Network</p>
+
+  <button onclick="start()">Test Pi Payment</button>
+
+  <script>
+    Pi.init({ version: "2.0", sandbox: true });
+
+    async function start() {
+      try {
+        // 🔴 REQUIRED STEP
+        const auth = await Pi.authenticate(
+          ["payments"],
+          function onIncompletePaymentFound(payment) {
+            console.log("Incomplete payment:", payment);
+          }
+        );
+
+        console.log("Authenticated:", auth);
+
+        // ✅ AFTER AUTH — PAYMENT WILL OPEN
+        Pi.createPayment(
+          {
+            amount: 0.01,
+            memo: "Souqmarine Testnet Verification"
+          },
+          {
+            onReadyForServerApproval(paymentId) {
+              fetch("/api/approve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ paymentId })
+              });
+            },
+
+            onComplete(paymentId, txid) {
+              fetch("/api/complete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ paymentId, txid })
+              });
+              alert("Payment successful ✔️");
+            },
+
+            onCancel() {
+              alert("Payment cancelled");
+            },
+
+            onError(err) {
+              alert("Payment error");
+              console.error(err);
+            }
+          }
+        );
+
+      } catch (err) {
+        alert("Authentication failed");
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>
