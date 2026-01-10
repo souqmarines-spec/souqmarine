@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Souqmarine</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+
+  <h1>Souqmarine</h1>
+  <p>Maritime market · Powered by Pi Network</p>
+
+  <button onclick="start()">Test Pi Payment</button>
+
+  <script>
+    // ❌ استخدم sandbox=false للدفع الحقيقي
+    Pi.init({ version: "2.0", sandbox: false });
+
+    async function start() {
+      try {
+        // توثيق المستخدم للسماح بالدفع
+        const auth = await Pi.authenticate(["payments"]);
+        console.log("Authenticated:", auth);
+
+        // إنشاء عملية الدفع
+        Pi.createPayment(
+          {
+            amount: 0.01,               // المبلغ بالـ Pi
+            memo: "Souqmarine Test Payment"
+          },
+          {
+            onReadyForServerApproval(paymentId) {
+              console.log("Ready for server approval:", paymentId);
+              // مؤقتًا لا حاجة للسيرفر، التجربة ستعمل
+            },
+
+            onComplete(paymentId, txid) {
+              console.log("Payment complete:", paymentId, txid);
+              alert("Payment successful ✔️");
+            },
+
+            onCancel() {
+              alert("Payment cancelled");
+            },
+
+            onError(err) {
+              alert("Payment error");
+              console.error(err);
+            }
+          }
+        );
+
+      } catch (err) {
+        alert("Authentication failed");
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>
