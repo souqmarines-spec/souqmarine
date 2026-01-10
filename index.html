@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Souqmarine Sandbox Test</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+
+  <h1>Souqmarine Sandbox</h1>
+  <p>Maritime market · Powered by Pi Network</p>
+
+  <button onclick="start()">Test Pi Payment</button>
+
+  <script>
+    // 🔹 استخدم sandbox=true للتجربة على Pi Testnet
+    Pi.init({
+      version: "2.0",
+      sandbox: true
+    });
+
+    async function start() {
+      try {
+        // 🔹 Authenticate المستخدم للسماح بالدفع
+        const auth = await Pi.authenticate(["payments"]);
+        console.log("Authenticated:", auth);
+
+        // 🔹 إنشاء عملية الدفع مباشرة على Sandbox
+        Pi.createPayment(
+          {
+            amount: 0.01, // المبلغ التجريبي بالـ Pi
+            memo: "Souqmarine Sandbox Test",
+            appId: "3vngnuqsbiuzr10fpytdnrhdndmpllmdbr916qpcfvrad2opybreskqmbl5gfdge",
+            wallet: "GCL4D7WXIRSGPFDZG4DR5URJH3YD4N2NGP5R4QNRG76HGYQI6KVYNAOV"
+          },
+          {
+            onComplete(paymentId, txid) {
+              alert("Payment successful ✔️");
+              console.log("Payment complete:", paymentId, txid);
+            },
+            onCancel() {
+              alert("Payment cancelled ❌");
+            },
+            onError(err) {
+              alert("Payment error ❌");
+              console.error(err);
+            }
+          }
+        );
+
+      } catch (err) {
+        alert("Authentication failed ❌\nتأكد من تفويض Sandbox داخل Pi Utilities");
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>
