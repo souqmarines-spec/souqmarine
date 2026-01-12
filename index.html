@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Souqmarine Pi Sandbox</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+
+<h2>Souqmarine Sandbox Payment</h2>
+<button onclick="startPayment()">Pay 0.01 Test Pi</button>
+
+<script>
+  // تشغيل Pi SDK على Sandbox
+  Pi.init({ version: "2.0", sandbox: true });
+
+  async function startPayment() {
+    try {
+      // مصادقة المستخدم
+      const auth = await Pi.authenticate(['payments']);
+      console.log("Auth OK:", auth);
+
+      // إنشاء الدفع
+      Pi.createPayment(
+        {
+          amount: 0.01,
+          memo: "Souqmarine Test Payment",
+          metadata: { orderId: "souqmarine-test-001" } 
+        },
+        {
+          // عند جاهزية الموافقة من السيرفر
+          onReadyForServerApproval: async function(paymentId) {
+            console.log("Approving payment:", paymentId);
+
+            await fetch("/api/approve_payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId })
+            });
+          },
+
+          // عند جاهزية الإكمال
+          onReadyForServerCompletion: async function(paymentId, txid) {
+            console.log("Completing payment:", paymentId, txid);
+
+            await fetch("/api/complete_payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid })
+            });
+
+            alert("✅ Payment Successful!");
+          },
+
+          onCancel: function() {
+            alert("❌ Payment Cancelled");
+          },
+
+          onError: function(err) {
+            console.error(err);
+            alert("❌ Error: " + err.message);
+          }
+        }
+      );
+
+    } catch (e) {
+      console.error(e);
+      alert("❌ Authentication failed");
+    }
+  }
+</script>
+
+</body>
+</html>
